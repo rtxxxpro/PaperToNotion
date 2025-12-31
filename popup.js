@@ -14,6 +14,22 @@ function getBibField(field, text) {
     return null;
 }
 
+function deriveConferenceLabel(meeting, url) {
+    const tmp = (meeting || '').toLowerCase();
+    const normalizedUrl = (url || '').toLowerCase();
+
+    if (normalizedUrl.includes('atc')) return 'ATC';
+    if (tmp.includes('symposium on operating systems principles')) return 'SOSP';
+    if (tmp.includes('architectural support for programming languages and operating systems')) return 'ASPLOS';
+    if (tmp.includes('european conference on computer systems')) return 'EuroSys';
+    if (tmp.includes('high performance computing, networking, storage, and analysis')) return 'HPC';
+    if (tmp.includes('principles and practice of parallel programming')) return 'PPoPP';
+    if (normalizedUrl.includes('osdi')) return 'OSDI';
+    if (normalizedUrl.includes('fast')) return 'FAST';
+    if (tmp.includes('international symposium on microarchitecture')) return 'Micro';
+    return '';
+}
+
 // Parse BibTeX snippet and update the preview
 function updateUI(text) {
     if (!text) return {};
@@ -23,21 +39,17 @@ function updateUI(text) {
         year: getBibField('year', text) || "0",
         url: getBibField('url', text) || (getBibField('doi', text) ? `https://doi.org/${getBibField('doi', text)}` : null)
     };
+    info.conference = deriveConferenceLabel(info.meeting, info.url);
     document.getElementById('outTitle').textContent = info.title || "Title not detected";
     document.getElementById('outMeeting').textContent = info.meeting;
     document.getElementById('outYear').textContent = info.year;
+    const conferenceEl = document.getElementById('outConference');
+    if (conferenceEl) conferenceEl.textContent = info.conference || "-";
     const linkEl = document.getElementById('outLink');
     if (info.url) {
         linkEl.href = info.url; linkEl.style.display = 'inline';
         document.getElementById('linkPlaceholder').style.display = 'none';
     }
-
-    const DEFAULT_FIELDS = {
-        fieldTitle: "Paper",
-        fieldMeeting: "Proceedings Title",
-        fieldYear: "Date",
-        fieldUrl: "URL"
-    };
     return info;
 }
 
@@ -101,17 +113,22 @@ async function syncToNotion(info) {
 
     const getFieldName = (id) => {
         const el = document.getElementById(id);
-        if (!el) return DEFAULT_FIELDS[id] || '';
-        const value = el.value.trim();
-        return value || DEFAULT_FIELDS[id] || '';
+        if (!el) return '';
+        return el.value.trim();
     };
 
     const notionFields = {
         title: getFieldName('fieldTitle'),
         meeting: getFieldName('fieldMeeting'),
         year: getFieldName('fieldYear'),
-        url: getFieldName('fieldUrl')
+        url: getFieldName('fieldUrl'),
+        conference: getFieldName('fieldConference')
     };
+
+    if (!notionFields.title) {
+        log("Error: Title property is required");
+        return;
+    }
 
     const currentDate = new Date().toISOString().split('T')[0];
     const properties = {};
@@ -119,18 +136,29 @@ async function syncToNotion(info) {
     properties[notionFields.title] = {
         title: [{ text: { content: info.title || "Untitled" } }]
     };
-    properties[notionFields.meeting] = {
-        rich_text: [{ text: { content: info.meeting || "Unknown" } }]
-    };
-    properties[notionFields.year] = {
-        rich_text: [{ text: { content: info.year || "0" } }]
-    };
-    properties[notionFields.url] = {
-        url: info.url || "https://example.com"
-    };
+    if (notionFields.meeting) {
+        properties[notionFields.meeting] = {
+            rich_text: [{ text: { content: info.meeting || "Unknown" } }]
+        };
+    }
+    if (notionFields.year) {
+        properties[notionFields.year] = {
+            rich_text: [{ text: { content: info.year || "0" } }]
+        };
+    }
+    if (notionFields.url) {
+        properties[notionFields.url] = {
+            url: info.url || "https://example.com"
+        };
+    }
     properties["PDF Name"] = {
         rich_text: [{ text: { content: info.pdfPath || "No local file" } }]
     };
+    if (notionFields.conference) {
+        properties[notionFields.conference] = {
+            rich_text: [{ text: { content: info.conference || "" } }]
+        };
+    }
     properties["Date Added"] = {
         date: { start: currentDate }
     };
@@ -172,7 +200,8 @@ function saveConfig() {
         fieldTitle: document.getElementById('fieldTitle').value.trim(),
         fieldMeeting: document.getElementById('fieldMeeting').value.trim(),
         fieldYear: document.getElementById('fieldYear').value.trim(),
-        fieldUrl: document.getElementById('fieldUrl').value.trim()
+        fieldUrl: document.getElementById('fieldUrl').value.trim(),
+        fieldConference: document.getElementById('fieldConference').value.trim()
     };
     chrome.storage.local.set(config, () => {
         console.log("Configuration saved automatically");
@@ -182,18 +211,19 @@ function saveConfig() {
 // --- 2. Initialization logic ---
 document.addEventListener('DOMContentLoaded', async () => {
     // Populate cached values
-    chrome.storage.local.get(['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl'], (res) => {
+    chrome.storage.local.get(['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl', 'fieldConference'], (res) => {
         if (res.subfolder) document.getElementById('subfolder').value = res.subfolder;
         if (res.notionToken) document.getElementById('notionToken').value = res.notionToken;
         if (res.notionDbId) document.getElementById('notionDbId').value = res.notionDbId;
-        document.getElementById('fieldTitle').value = res.fieldTitle || DEFAULT_FIELDS.fieldTitle;
-        document.getElementById('fieldMeeting').value = res.fieldMeeting || DEFAULT_FIELDS.fieldMeeting;
-        document.getElementById('fieldYear').value = res.fieldYear || DEFAULT_FIELDS.fieldYear;
-        document.getElementById('fieldUrl').value = res.fieldUrl || DEFAULT_FIELDS.fieldUrl;
+        document.getElementById('fieldTitle').value = res.fieldTitle || '';
+        document.getElementById('fieldMeeting').value = res.fieldMeeting || '';
+        document.getElementById('fieldYear').value = res.fieldYear || '';
+        document.getElementById('fieldUrl').value = res.fieldUrl || '';
+        document.getElementById('fieldConference').value = res.fieldConference || '';
     });
 
     // Bind autosave events to inputs
-    ['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl'].forEach(id => {
+    ['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl', 'fieldConference'].forEach(id => {
         document.getElementById(id).addEventListener('input', saveConfig);
     });
 
