@@ -2,6 +2,8 @@
 
 If you use Chrome for paper searching/reading and use Notion for paper management, then PaperToNotion may help. 
 
+I've been using Zotero for paper reading and management for a long time. However, Zotero is weak in tag-based grouping and multi-device synchronization when using a third-party cloud service (e.g., OneDrive). Therefore, I turned to Notion dataset for managing paper metadata and found that it is pretty easy and graceful. Moreover, I recently find Google Scholar PDF Reader a perfect choice for paper reading -- AI conclusions for each paragraph, ability to highlight and elimination of local PDF file management. As a result, Chrome + Notion seems perfect and there's no more need for Zotero. However, there are no existing extensions that directly parse a paper site's metadata and insert it into Notion database (similar to Zotero's Chrome extension), so I build one with the help of GPT. This extension is simple but has fulfilled my needs. If you would like any other cool features, feel free to open an issue or pull requests.   
+
 PaperToNotion is a Chrome extension that detects BibTeX snippets on any web page, parses the key metadata, downloads the matching PDF, and pushes the cleaned information into your Notion database. It keeps your reading workflow and your Notion knowledge base perfectly in sync.
 
 ## Highlights
