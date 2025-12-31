@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h3>Paper to Notion</h3>
+  
+  <details>
+    <summary>⚙️ Configure Notion & Path</summary>
+    <div class="config-section">
+      <input type="password" id="notionToken" placeholder="Notion API Token (secret_...)">
+      <input type="text" id="notionDbId" placeholder="Notion Database ID">
+      <input type="text" id="subfolder" placeholder="Download subfolder name">
+    </div>
+  </details>
+
+  <textarea id="bibInput" placeholder="Waiting for BibTeX detection... Paste manually if it fails"></textarea>
+  
+  <div class="button-group">
+    <button id="mainActionBtn" class="green-btn">🚀 Parse, Download, and Sync</button>
+  </div>
+  
+  <div id="status">Detecting page content...</div>
+
+  <div id="debugLog" style="display:none; background:#333; color:#0f0; padding:8px; font-size:10px; margin-bottom:10px; max-height:80px; overflow:auto;">
+    <pre id="logContent" style="margin:0; white-space:pre-wrap;"></pre>
+  </div>
+
+  <div id="result">
+    <div class="field"><strong>Title:</strong> <span id="outTitle">-</span></div>
+    <div class="field"><strong>Conference:</strong> <span id="outMeeting">-</span></div>
+    <div class="field"><strong>Year:</strong> <span id="outYear">-</span></div>
+    <div class="field"><strong>URL:</strong> <a id="outLink" href="#" target="_blank" style="display:none;">View source</a><span id="linkPlaceholder">-</span></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
