@@ -37,7 +37,8 @@ You need a Notion Integration Token and a target database ID before syncing pape
 	- Notion Database ID
 	- Download subfolder (optional, e.g., `papers/2025`)
 	- Preferred property names for Title/Conference/Year/URL so the payload maps to the correct Notion columns
-  The information will be remembered after filling for the first time. 
+  
+    The information will be remembered after filling for the first time. 
 4. Press **🚀 Parse, Download, and Sync**:
 	- The extension downloads the PDF via Chrome’s download manager using the sanitized title.
 	- Status messages and Notion API responses appear in the log area at the bottom of the popup.
