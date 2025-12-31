@@ -31,6 +31,13 @@ function updateUI(text) {
         linkEl.href = info.url; linkEl.style.display = 'inline';
         document.getElementById('linkPlaceholder').style.display = 'none';
     }
+
+    const DEFAULT_FIELDS = {
+        fieldTitle: "Paper",
+        fieldMeeting: "Proceedings Title",
+        fieldYear: "Date",
+        fieldUrl: "URL"
+    };
     return info;
 }
 
@@ -92,7 +99,41 @@ async function syncToNotion(info) {
         return;
     }
 
+    const getFieldName = (id) => {
+        const el = document.getElementById(id);
+        if (!el) return DEFAULT_FIELDS[id] || '';
+        const value = el.value.trim();
+        return value || DEFAULT_FIELDS[id] || '';
+    };
+
+    const notionFields = {
+        title: getFieldName('fieldTitle'),
+        meeting: getFieldName('fieldMeeting'),
+        year: getFieldName('fieldYear'),
+        url: getFieldName('fieldUrl')
+    };
+
     const currentDate = new Date().toISOString().split('T')[0];
+    const properties = {};
+
+    properties[notionFields.title] = {
+        title: [{ text: { content: info.title || "Untitled" } }]
+    };
+    properties[notionFields.meeting] = {
+        rich_text: [{ text: { content: info.meeting || "Unknown" } }]
+    };
+    properties[notionFields.year] = {
+        rich_text: [{ text: { content: info.year || "0" } }]
+    };
+    properties[notionFields.url] = {
+        url: info.url || "https://example.com"
+    };
+    properties["PDF Name"] = {
+        rich_text: [{ text: { content: info.pdfPath || "No local file" } }]
+    };
+    properties["Date Added"] = {
+        date: { start: currentDate }
+    };
 
     log("Syncing to Notion...");
     try {
@@ -105,26 +146,7 @@ async function syncToNotion(info) {
             },
             body: JSON.stringify({
                 parent: { database_id: dbId },
-                properties: {
-                    "Paper": { 
-                        title: [{ text: { content: info.title || "Untitled" } }] 
-                    },
-                    "Proceedings Title": { 
-                        rich_text: [{ text: { content: info.meeting || "Unknown" } }] 
-                    },
-                    "Date": { 
-                        rich_text: [{ text: { content: info.year || "0" } }] 
-                    },
-                    "URL": { 
-                        url: info.url || "https://example.com" 
-                    },
-                    "PDF Name": { 
-                        rich_text: [{ text: { content: info.pdfPath || "No local file" } }] 
-                    },
-                    "Date Added": { 
-                        date: { start: currentDate } 
-                    }
-                }
+                properties
             })
         });
         
@@ -146,7 +168,11 @@ function saveConfig() {
     const config = {
         subfolder: document.getElementById('subfolder').value,
         notionToken: document.getElementById('notionToken').value.trim(),
-        notionDbId: document.getElementById('notionDbId').value.trim()
+        notionDbId: document.getElementById('notionDbId').value.trim(),
+        fieldTitle: document.getElementById('fieldTitle').value.trim(),
+        fieldMeeting: document.getElementById('fieldMeeting').value.trim(),
+        fieldYear: document.getElementById('fieldYear').value.trim(),
+        fieldUrl: document.getElementById('fieldUrl').value.trim()
     };
     chrome.storage.local.set(config, () => {
         console.log("Configuration saved automatically");
@@ -156,14 +182,18 @@ function saveConfig() {
 // --- 2. Initialization logic ---
 document.addEventListener('DOMContentLoaded', async () => {
     // Populate cached values
-    chrome.storage.local.get(['subfolder', 'notionToken', 'notionDbId'], (res) => {
+    chrome.storage.local.get(['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl'], (res) => {
         if (res.subfolder) document.getElementById('subfolder').value = res.subfolder;
         if (res.notionToken) document.getElementById('notionToken').value = res.notionToken;
         if (res.notionDbId) document.getElementById('notionDbId').value = res.notionDbId;
+        document.getElementById('fieldTitle').value = res.fieldTitle || DEFAULT_FIELDS.fieldTitle;
+        document.getElementById('fieldMeeting').value = res.fieldMeeting || DEFAULT_FIELDS.fieldMeeting;
+        document.getElementById('fieldYear').value = res.fieldYear || DEFAULT_FIELDS.fieldYear;
+        document.getElementById('fieldUrl').value = res.fieldUrl || DEFAULT_FIELDS.fieldUrl;
     });
 
     // Bind autosave events to inputs
-    ['subfolder', 'notionToken', 'notionDbId'].forEach(id => {
+    ['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl'].forEach(id => {
         document.getElementById(id).addEventListener('input', saveConfig);
     });
 

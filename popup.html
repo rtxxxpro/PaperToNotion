@@ -29,10 +29,43 @@
   </div>
 
   <div id="result">
-    <div class="field"><strong>Title:</strong> <span id="outTitle">-</span></div>
-    <div class="field"><strong>Conference:</strong> <span id="outMeeting">-</span></div>
-    <div class="field"><strong>Year:</strong> <span id="outYear">-</span></div>
-    <div class="field"><strong>URL:</strong> <a id="outLink" href="#" target="_blank" style="display:none;">View source</a><span id="linkPlaceholder">-</span></div>
+    <div class="field">
+      <div class="field-label">
+        <strong>Title</strong>
+        <input type="text" id="fieldTitle" class="field-map-input" placeholder="Notion property" />
+      </div>
+      <div class="field-value" id="titleValue">
+        <span id="outTitle">-</span>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">
+        <strong>Conference</strong>
+        <input type="text" id="fieldMeeting" class="field-map-input" placeholder="Notion property" />
+      </div>
+      <div class="field-value" id="meetingValue">
+        <span id="outMeeting">-</span>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">
+        <strong>Year</strong>
+        <input type="text" id="fieldYear" class="field-map-input" placeholder="Notion property" />
+      </div>
+      <div class="field-value" id="yearValue">
+        <span id="outYear">-</span>
+      </div>
+    </div>
+    <div class="field">
+      <div class="field-label">
+        <strong>URL</strong>
+        <input type="text" id="fieldUrl" class="field-map-input" placeholder="Notion property" />
+      </div>
+      <div class="field-value" id="urlValue">
+        <a id="outLink" href="#" target="_blank" style="display:none;">View source</a>
+        <span id="linkPlaceholder">-</span>
+      </div>
+    </div>
   </div>
 
   <script src="popup.js"></script>

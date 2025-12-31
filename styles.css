@@ -8,5 +8,10 @@ button { width: 100%; padding: 12px; cursor: pointer; border: none; border-radiu
 .green-btn { background-color: #0f9d58; }
 #status { font-size: 12px; margin-bottom: 8px; font-weight: bold; color: #444; }
 #result { background: white; padding: 10px; border-radius: 4px; border: 1px solid #eee; font-size: 12px; }
-.field { margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 3px; word-break: break-all; }
-strong { display: inline-block; width: 60px; color: #666; }
+.field { display: grid; grid-template-columns: 160px 1fr; gap: 12px; align-items: center; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+.field:last-child { border-bottom: none; margin-bottom: 0; }
+.field-label { display: flex; flex-direction: column; gap: 4px; }
+.field-label strong { font-size: 12px; color: #444; }
+.field-value { text-align: left; word-break: break-word; font-weight: 600; color: #222; }
+.field-value a { color: #1a73e8; text-decoration: none; }
+.field-map-input { width: 100%; max-width: 130px; padding: 3px 5px; font-size: 11px; border: 1px solid #ccc; border-radius: 3px; box-sizing: border-box; }
