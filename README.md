@@ -1,5 +1,7 @@
 # PaperToNotion
 
+If you use Chrome for paper searching/reading and use Notion for paper management, then PaperToNotion may help. 
+
 PaperToNotion is a Chrome extension that detects BibTeX snippets on any web page, parses the key metadata, downloads the matching PDF, and pushes the cleaned information into your Notion database. It keeps your reading workflow and your Notion knowledge base perfectly in sync.
 
 ## Highlights
@@ -28,13 +30,14 @@ You need a Notion Integration Token and a target database ID before syncing pape
 	- Notion Database ID → the 32-character ID from step 3 (no braces or extra symbols).
 
 ## Usage
-1. Open a paper page that exposes BibTeX (ACM DL, USENIX, IEEE Xplore, arXiv, etc.), **in some sites, you need to manually click the icon that shows the BibTeX (ACM DL, USENIX)**.
+1. Open a paper page that exposes BibTeX (ACM DL, USENIX, IEEE Xplore, arXiv, etc.). **In some sites, you need to manually click the icon that shows the BibTeX (ACM DL, USENIX)**.
 2. Click the extension icon; it auto-grabs BibTeX. If detection fails, paste the snippet manually into the textarea.
 3. Expand **⚙️ Configure Notion & Path** on the first run and fill in:
 	- Notion API Token
 	- Notion Database ID
 	- Download subfolder (optional, e.g., `papers/2025`)
 	- Preferred property names for Title/Conference/Year/URL so the payload maps to the correct Notion columns
+  The information will be remembered after filling for the first time. 
 4. Press **🚀 Parse, Download, and Sync**:
 	- The extension downloads the PDF via Chrome’s download manager using the sanitized title.
 	- Status messages and Notion API responses appear in the log area at the bottom of the popup.
