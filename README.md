@@ -11,6 +11,7 @@ PaperToNotion is a Chrome extension that detects BibTeX snippets on any web page
 - 📄 Smart parsing: extracts `title`, `booktitle`/`journal`, `year`, and `url`/`doi`, then shows a live preview inside the popup.
 - ⬇️ One-click downloads: finds PDF links, normalizes the file name using the paper title, and lets Chrome download it into an optional subfolder.
 - 🧠 Notion sync: creates a page in your database through the official Notion API with Paper, Proceedings Title, Date, URL, PDF Name, and Date Added properties.
+- 🔗 PDF link capture: stores the detected PDF URL into any Notion property you map in the popup.
 - 💾 Persistent config: Notion token, database ID, and download subfolder are cached in `chrome.storage` so you only enter them once.
 - 🧩 Field mapping: rename the Title/Conference/Year/URL property targets directly in the popup to match any Notion schema.
 
@@ -38,7 +39,7 @@ You need a Notion Integration Token and a target database ID before syncing pape
 	- Notion API Token
 	- Notion Database ID
 	- Download subfolder (optional, e.g., `papers/2025`)
-	- Preferred property names for Title/Conference/Year/URL so the payload maps to the correct Notion columns
+	- Preferred property names for Title/Conference/Year/URL/PDF Link so the payload maps to the correct Notion columns
   
     The information will be remembered after filling for the first time. 
 4. Press **🚀 Parse, Download, and Sync**:

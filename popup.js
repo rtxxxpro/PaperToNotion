@@ -23,6 +23,7 @@ function deriveConferenceLabel(meeting, url) {
     if (tmp.includes('architectural support for programming languages and operating systems')) return 'ASPLOS';
     if (tmp.includes('european conference on computer systems')) return 'EuroSys';
     if (tmp.includes('high performance computing, networking, storage, and analysis')) return 'HPC';
+    if (tmp.includes('networked systems design and implementation') || tmp.includes('nsdi') || normalizedUrl.includes('nsdi')) return 'NSDI';
     if (tmp.includes('principles and practice of parallel programming')) return 'PPoPP';
     if (normalizedUrl.includes('osdi')) return 'OSDI';
     if (normalizedUrl.includes('fast')) return 'FAST';
@@ -49,8 +50,26 @@ function updateUI(text) {
     if (info.url) {
         linkEl.href = info.url; linkEl.style.display = 'inline';
         document.getElementById('linkPlaceholder').style.display = 'none';
+    } else {
+        linkEl.style.display = 'none';
+        document.getElementById('linkPlaceholder').style.display = 'inline';
     }
     return info;
+}
+
+function updatePdfLinkDisplay(link) {
+    const pdfLinkEl = document.getElementById('outPdfLink');
+    const placeholder = document.getElementById('pdfLinkPlaceholder');
+    if (!pdfLinkEl || !placeholder) return;
+    if (link) {
+        pdfLinkEl.href = link;
+        pdfLinkEl.style.display = 'inline';
+        placeholder.style.display = 'none';
+    } else {
+        pdfLinkEl.removeAttribute('href');
+        pdfLinkEl.style.display = 'none';
+        placeholder.style.display = 'inline';
+    }
 }
 
 // Core logic: grab content from the active tab
@@ -122,7 +141,8 @@ async function syncToNotion(info) {
         meeting: getFieldName('fieldMeeting'),
         year: getFieldName('fieldYear'),
         url: getFieldName('fieldUrl'),
-        conference: getFieldName('fieldConference')
+        conference: getFieldName('fieldConference'),
+        pdfLink: getFieldName('fieldPdfLink')
     };
 
     if (!notionFields.title) {
@@ -157,6 +177,11 @@ async function syncToNotion(info) {
     if (notionFields.conference) {
         properties[notionFields.conference] = {
             rich_text: [{ text: { content: info.conference || "" } }]
+        };
+    }
+    if (notionFields.pdfLink) {
+        properties[notionFields.pdfLink] = {
+            url: info.pdfLink || null
         };
     }
     properties["Date Added"] = {
@@ -201,7 +226,8 @@ function saveConfig() {
         fieldMeeting: document.getElementById('fieldMeeting').value.trim(),
         fieldYear: document.getElementById('fieldYear').value.trim(),
         fieldUrl: document.getElementById('fieldUrl').value.trim(),
-        fieldConference: document.getElementById('fieldConference').value.trim()
+        fieldConference: document.getElementById('fieldConference').value.trim(),
+        fieldPdfLink: document.getElementById('fieldPdfLink').value.trim()
     };
     chrome.storage.local.set(config, () => {
         console.log("Configuration saved automatically");
@@ -211,7 +237,7 @@ function saveConfig() {
 // --- 2. Initialization logic ---
 document.addEventListener('DOMContentLoaded', async () => {
     // Populate cached values
-    chrome.storage.local.get(['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl', 'fieldConference'], (res) => {
+    chrome.storage.local.get(['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl', 'fieldConference', 'fieldPdfLink'], (res) => {
         if (res.subfolder) document.getElementById('subfolder').value = res.subfolder;
         if (res.notionToken) document.getElementById('notionToken').value = res.notionToken;
         if (res.notionDbId) document.getElementById('notionDbId').value = res.notionDbId;
@@ -220,12 +246,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('fieldYear').value = res.fieldYear || '';
         document.getElementById('fieldUrl').value = res.fieldUrl || '';
         document.getElementById('fieldConference').value = res.fieldConference || '';
+        document.getElementById('fieldPdfLink').value = res.fieldPdfLink || '';
     });
 
     // Bind autosave events to inputs
-    ['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl', 'fieldConference'].forEach(id => {
+    ['subfolder', 'notionToken', 'notionDbId', 'fieldTitle', 'fieldMeeting', 'fieldYear', 'fieldUrl', 'fieldConference', 'fieldPdfLink'].forEach(id => {
         document.getElementById(id).addEventListener('input', saveConfig);
     });
+
+    updatePdfLinkDisplay(null);
 
     // Auto-grab BibTeX from the current page
     const data = await grabContent();
@@ -236,6 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         document.getElementById('status').textContent = "❓ No BibTeX detected, please paste manually";
     }
+    updatePdfLinkDisplay(data?.pdf || null);
 });
 
 document.getElementById('mainActionBtn').addEventListener('click', async () => {
@@ -247,6 +277,9 @@ document.getElementById('mainActionBtn').addEventListener('click', async () => {
     
     // Autosave configuration
     saveConfig();
+
+    info.pdfLink = data?.pdf || null;
+    updatePdfLinkDisplay(info.pdfLink);
 
     if (data?.pdf) {
         const sub = document.getElementById('subfolder').value;
