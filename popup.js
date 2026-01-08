@@ -18,7 +18,7 @@ function deriveConferenceLabel(meeting, url) {
     const tmp = (meeting || '').toLowerCase();
     const normalizedUrl = (url || '').toLowerCase();
 
-    if (normalizedUrl.includes('atc')) return 'ATC';
+    if (tmp.includes('annual technical conference')) return 'ATC';
     if (tmp.includes('symposium on operating systems principles')) return 'SOSP';
     if (tmp.includes('architectural support for programming languages and operating systems')) return 'ASPLOS';
     if (tmp.includes('european conference on computer systems')) return 'EuroSys';
