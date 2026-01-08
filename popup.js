@@ -26,19 +26,23 @@ function deriveConferenceLabel(meeting, url) {
     if (tmp.includes('networked systems design and implementation') || tmp.includes('nsdi') || normalizedUrl.includes('nsdi')) return 'NSDI';
     if (tmp.includes('principles and practice of parallel programming')) return 'PPoPP';
     if (normalizedUrl.includes('osdi')) return 'OSDI';
+    if (tmp.includes('neural information processing systems') || tmp.includes('neurips') || tmp.includes('nips') || normalizedUrl.includes('neurips') || normalizedUrl.includes('nips')) return 'NeurIPS';
+    if (tmp.includes('machine learning and systems') || tmp.includes('mlsys') || normalizedUrl.includes('mlsys')) return 'MLSys';
     if (normalizedUrl.includes('fast')) return 'FAST';
     if (tmp.includes('international symposium on microarchitecture')) return 'Micro';
     return '';
 }
 
 // Parse BibTeX snippet and update the preview
-function updateUI(text) {
+function updateUI(text, fallbackUrl = null) {
     if (!text) return {};
+    const doi = getBibField('doi', text);
+    const directUrl = getBibField('url', text);
     const info = {
         title: getBibField('title', text),
         meeting: getBibField('booktitle', text) || getBibField('journal', text) || "Unknown",
         year: getBibField('year', text) || "0",
-        url: getBibField('url', text) || (getBibField('doi', text) ? `https://doi.org/${getBibField('doi', text)}` : null)
+        url: directUrl || (doi ? `https://doi.org/${doi}` : (fallbackUrl || null))
     };
     info.conference = deriveConferenceLabel(info.meeting, info.url);
     document.getElementById('outTitle').textContent = info.title || "Title not detected";
@@ -118,7 +122,8 @@ async function grabContent() {
             return { bib: foundBib, pdf: foundPdf };
         }
     });
-    return results?.[0]?.result;
+    const payload = results?.[0]?.result || {};
+    return { ...payload, pageUrl: tab.url || null };
 }
 
 // Sync data to Notion
@@ -260,7 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await grabContent();
     if (data?.bib) {
         document.getElementById('bibInput').value = data.bib;
-        updateUI(data.bib);
+        updateUI(data.bib, data.pageUrl);
         document.getElementById('status').textContent = "✅ Detected automatically";
     } else {
         document.getElementById('status').textContent = "❓ No BibTeX detected, please paste manually";
@@ -270,8 +275,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 document.getElementById('mainActionBtn').addEventListener('click', async () => {
     const bibText = document.getElementById('bibInput').value;
-    const info = updateUI(bibText);
     const data = await grabContent();
+    const info = updateUI(bibText, data?.pageUrl || null);
 
     if (!info.title) { log("Error: Unable to parse title"); return; }
     
